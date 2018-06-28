@@ -1,6 +1,6 @@
 package com.loror.compiler;
 
-import com.loror.finder.Find;
+import com.loror.lororUtil.view.Find;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -41,7 +41,7 @@ public class ElementInfo {
             StringBuilder builder = new StringBuilder();
             builder.append("// Generated code. Do not modify!\n");
             builder.append("package ").append(packageName).append(";\n\n");
-            builder.append("public class ").append(proxyClassName).append(" implements com.loror.finder.Finder{\n");
+            builder.append("public class ").append(proxyClassName).append(" implements com.loror.lororUtil.view.ClassAnotationFinder{\n");
             builder.append("@Override\n");
             builder.append("public void find(Object holder, Object source) {\n");
             builder.append("int id = 0;\n");
