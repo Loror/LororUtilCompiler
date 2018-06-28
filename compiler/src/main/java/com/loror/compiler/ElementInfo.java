@@ -107,7 +107,7 @@ public class ElementInfo {
         public ElementInfoItem(String classType, String valueName, int id) {
             this.classType = classType;
             this.valueName = valueName;
-            this.id = id;
+            this.id = id <= 0 ? 0 : id;
         }
     }
 }
