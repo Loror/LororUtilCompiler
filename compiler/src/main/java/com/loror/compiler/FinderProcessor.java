@@ -1,6 +1,5 @@
 package com.loror.compiler;
 
-import com.google.auto.service.AutoService;
 import com.loror.finder.Find;
 
 import java.util.HashMap;
@@ -16,7 +15,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-@AutoService(Processor.class)
 public class FinderProcessor extends AbstractProcessor {
 
     private HashMap<String, ElementInfo> elementInfoHashMap = new HashMap<>();
