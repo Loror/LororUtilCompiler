@@ -41,7 +41,7 @@ public class ElementInfo {
             StringBuilder builder = new StringBuilder();
             builder.append("// Generated code. Do not modify!\n");
             builder.append("package ").append(packageName).append(";\n\n");
-            builder.append("public class ").append(proxyClassName).append(" implements com.loror.lororUtil.view.ClassAnotationFinder{\n");
+            builder.append("public class ").append(proxyClassName.replace(".", "$")).append(" implements com.loror.lororUtil.view.ClassAnotationFinder{\n");
             builder.append("@Override\n");
             builder.append("public void find(Object holder, Object source) {\n");
             builder.append("int id = 0;\n");
@@ -83,7 +83,7 @@ public class ElementInfo {
             builder.append("}\n");
 
             JavaFileObject jfo = processingEnv.getFiler().createSourceFile(
-                    packageName + "." + proxyClassName,
+                    packageName + "." + proxyClassName.replace(".", "$"),
                     typeElement);
             Writer writer = jfo.openWriter();
             writer.write(builder.toString());
