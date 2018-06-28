@@ -68,7 +68,7 @@ public class ElementInfo {
                     builder.append("if(id != 0){\n");
                 }
                 builder.append("if(source instanceof android.app.Activity){\n");
-                builder.append("((").append(packageName).append(".").append(className).append(")source)").append(".").append(elementInfoItem.valueName)
+                builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
                         .append(" = (").append(elementInfoItem.classType).append(")((android.app.Activity)source).findViewById(id);\n");
                 builder.append("}else if(source instanceof android.view.View){\n");
                 builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
