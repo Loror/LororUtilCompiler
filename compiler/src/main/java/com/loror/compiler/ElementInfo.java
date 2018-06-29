@@ -163,7 +163,7 @@ public class ElementInfo {
                 if (isZero && elementInfoItem.type == 2) {
                     builder.append("if(source instanceof android.view.View){\n");
                     builder.append("final android.view.View temp = (android.view.View)source;\n");
-                    builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
+                    builder.append("temp.setOnClickListener(new android.view.View.OnClickListener() {\n");
                     builder.append("@Override\n");
                     builder.append("public void onClick(android.view.View v) {\n");
                     builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
