@@ -100,7 +100,6 @@ public class ElementInfo {
             builder.append("public void click(final Object holder, Object source) {\n");
             builder.append("int id = 0;\n");
             builder.append("android.view.View view = null;\n");
-            builder.append("Class<?> rClass = null;\n");
             for (ElementInfoItem elementInfoItem : elementInfoItems) {
                 if (elementInfoItem.type == 0) {
                     continue;
@@ -112,15 +111,6 @@ public class ElementInfo {
                 } else {
                     isZero = true;
                     builder.append("id = 0;\n");
-                    builder.append("try{\n");
-                    builder.append("if(rClass == null){\n");
-                    builder.append("android.content.Context context = source instanceof android.app.Activity ?(android.content.Context)source:((android.view.View)source).getContext();\n");
-                    builder.append("rClass = Class.forName(context.getPackageName() + \".R$id\");\n");
-                    builder.append("}\n");
-                    builder.append("java.lang.reflect.Field idField = rClass.getDeclaredField(\"").append(elementInfoItem.valueName).append("\");\n");
-                    builder.append("id = idField.getInt(idField);\n");
-                    builder.append("}catch(Exception e){\n");
-                    builder.append("e.printStackTrace();\n}");
                 }
                 builder.append("view = null;\n");
                 if (!isZero) {
