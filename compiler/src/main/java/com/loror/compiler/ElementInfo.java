@@ -123,60 +123,56 @@ public class ElementInfo {
                     builder.append("e.printStackTrace();\n}");
                 }
                 builder.append("view = null;\n");
-                if (isZero) {
-                    builder.append("if(id != 0){\n");
-                }
-                builder.append("if(source instanceof android.app.Activity){\n");
-                builder.append("view = ((android.app.Activity)source).findViewById(id);\n");
-                builder.append("}else if(source instanceof android.app.Fragment){\n");
-                builder.append("view = ((android.app.Fragment)source).getView().findViewById(id);\n");
-                builder.append("}else if(source instanceof android.support.v4.app.Fragment){\n");
-                builder.append("view = ((android.support.v4.app.Fragment)source).getView().findViewById(id);\n");
-                builder.append("}else if(source instanceof android.app.Dialog){\n");
-                builder.append("view = ((android.app.Dialog)source).findViewById(id);\n");
-                builder.append("}else if(source instanceof android.view.View){\n");
-                builder.append("view = ((android.view.View)source).findViewById(id);\n");
-                builder.append("}\n");
-                if (isZero) {
+                if (!isZero) {
+                    builder.append("if(source instanceof android.app.Activity){\n");
+                    builder.append("view = ((android.app.Activity)source).findViewById(id);\n");
+                    builder.append("}else if(source instanceof android.app.Fragment){\n");
+                    builder.append("view = ((android.app.Fragment)source).getView().findViewById(id);\n");
+                    builder.append("}else if(source instanceof android.support.v4.app.Fragment){\n");
+                    builder.append("view = ((android.support.v4.app.Fragment)source).getView().findViewById(id);\n");
+                    builder.append("}else if(source instanceof android.app.Dialog){\n");
+                    builder.append("view = ((android.app.Dialog)source).findViewById(id);\n");
+                    builder.append("}else if(source instanceof android.view.View){\n");
+                    builder.append("view = ((android.view.View)source).findViewById(id);\n");
                     builder.append("}\n");
-                }
-                builder.append("if(view != null){\n");
-                if (elementInfoItem.type == 1) {
-                    builder.append("final android.view.View temp = view;\n");
-                    builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
-                    builder.append("@Override\n");
-                    builder.append("public void onClick(android.view.View v) {\n");
-                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                            .append("(temp);\n");
-                    builder.append("}\n");
-                    builder.append("});\n");
-                } else {
-                    if (elementInfoItem.id != 0) {
-                        builder.append("if(view instanceof android.widget.AbsListView){\n");
-                        builder.append("final android.widget.AbsListView temp = (android.widget.AbsListView)view;\n");
-                        builder.append("temp.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {\n");
+                    builder.append("if(view != null){\n");
+                    if (elementInfoItem.type == 1) {
+                        builder.append("final android.view.View temp = view;\n");
+                        builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
                         builder.append("@Override\n");
-                        builder.append("public void onItemClick(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {\n");
+                        builder.append("public void onClick(android.view.View v) {\n");
                         builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                                .append("(view, position);\n");
+                                .append("(temp);\n");
                         builder.append("}\n");
                         builder.append("});\n");
-                        builder.append("}else if(view instanceof com.loror.lororUtil.view.ItemClickAble){\n");
-                        builder.append("final com.loror.lororUtil.view.ItemClickAble temp = (com.loror.lororUtil.view.ItemClickAble)view;\n");
-                        builder.append("temp.setOnItemClickListener(new com.loror.lororUtil.view.OnItemClickListener() {\n");
-                        builder.append("@Override\n");
-                        builder.append("public void onItemClick(android.view.View view, int position) {\n");
-                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                                .append("(view, position);\n");
-                        builder.append("}\n");
-                        builder.append("});\n");
-                        builder.append("}\n");
+                    } else {
+                        if (elementInfoItem.id != 0) {
+                            builder.append("if(view instanceof android.widget.AbsListView){\n");
+                            builder.append("final android.widget.AbsListView temp = (android.widget.AbsListView)view;\n");
+                            builder.append("temp.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {\n");
+                            builder.append("@Override\n");
+                            builder.append("public void onItemClick(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {\n");
+                            builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                                    .append("(view, position);\n");
+                            builder.append("}\n");
+                            builder.append("});\n");
+                            builder.append("}else if(view instanceof com.loror.lororUtil.view.ItemClickAble){\n");
+                            builder.append("final com.loror.lororUtil.view.ItemClickAble temp = (com.loror.lororUtil.view.ItemClickAble)view;\n");
+                            builder.append("temp.setOnItemClickListener(new com.loror.lororUtil.view.OnItemClickListener() {\n");
+                            builder.append("@Override\n");
+                            builder.append("public void onItemClick(android.view.View view, int position) {\n");
+                            builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                                    .append("(view, position);\n");
+                            builder.append("}\n");
+                            builder.append("});\n");
+                            builder.append("}\n");
+                        }
                     }
+                    builder.append("}\n");
                 }
-                builder.append("}\n");
-                if (elementInfoItem.id == 0 && elementInfoItem.type == 2) {
+                if (isZero && elementInfoItem.type == 2) {
                     builder.append("if(source instanceof android.view.View){\n");
-                    builder.append("final android.view.View temp = view;\n");
+                    builder.append("final android.view.View temp = (android.view.View)source;\n");
                     builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
                     builder.append("@Override\n");
                     builder.append("public void onClick(android.view.View v) {\n");
