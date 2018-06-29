@@ -1,12 +1,15 @@
 package com.loror.compiler;
 
+import com.loror.lororUtil.view.Click;
 import com.loror.lororUtil.view.Find;
+import com.loror.lororUtil.view.ItemClick;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.LinkedList;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -31,8 +34,9 @@ public class ElementInfo {
         this.proxyClassName = className + "$$Finder";
     }
 
-    public void addElement(VariableElement variableElement) {
-        elementInfoItems.add(new ElementInfoItem(variableElement.asType().toString(), variableElement.getSimpleName().toString(), variableElement.getAnnotation(Find.class).value()));
+    public void addElement(int type, Element variableElement) {
+        elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
+                type == 0 ? variableElement.getAnnotation(Find.class).value() : type == 1 ? variableElement.getAnnotation(Click.class).id() : variableElement.getAnnotation(ItemClick.class).id()));
     }
 
     public void generateSource() {
@@ -47,6 +51,9 @@ public class ElementInfo {
             builder.append("int id = 0;\n");
             builder.append("Class<?> rClass = null;\n");
             for (ElementInfoItem elementInfoItem : elementInfoItems) {
+                if (elementInfoItem.type != 0) {
+                    continue;
+                }
                 boolean isZero;
                 if (elementInfoItem.id != 0) {
                     isZero = false;
@@ -70,6 +77,15 @@ public class ElementInfo {
                 builder.append("if(source instanceof android.app.Activity){\n");
                 builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
                         .append(" = (").append(elementInfoItem.classType).append(")((android.app.Activity)source).findViewById(id);\n");
+                builder.append("}else if(source instanceof android.app.Fragment){\n");
+                builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                        .append(" = (").append(elementInfoItem.classType).append(")((android.app.Fragment)source).getView().findViewById(id);\n");
+                builder.append("}else if(source instanceof android.support.v4.app.Fragment){\n");
+                builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                        .append(" = (").append(elementInfoItem.classType).append(")((android.support.v4.app.Fragment)source).getView().findViewById(id);\n");
+                builder.append("}else if(source instanceof android.app.Dialog){\n");
+                builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                        .append(" = (").append(elementInfoItem.classType).append(")((android.app.Dialog)source).findViewById(id);\n");
                 builder.append("}else if(source instanceof android.view.View){\n");
                 builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
                         .append(" = (").append(elementInfoItem.classType).append(")((android.view.View)source).findViewById(id);\n");
@@ -78,7 +94,100 @@ public class ElementInfo {
                     builder.append("}\n");
                 }
             }
-            builder.append("android.util.Log.e(\"TAG_\",\"").append(packageName).append(".").append(className).append("\");\n");
+            builder.append("android.util.Log.e(\"TAG_\",\"").append(packageName).append(".").append(className).append(" finded\");\n");
+            builder.append("}\n");
+            builder.append("@Override\n");
+            builder.append("public void click(final Object holder, Object source) {\n");
+            builder.append("int id = 0;\n");
+            builder.append("android.view.View view = null;\n");
+            builder.append("Class<?> rClass = null;\n");
+            for (ElementInfoItem elementInfoItem : elementInfoItems) {
+                if (elementInfoItem.type == 0) {
+                    continue;
+                }
+                boolean isZero;
+                if (elementInfoItem.id != 0) {
+                    isZero = false;
+                    builder.append("id = ").append(elementInfoItem.id).append(";\n");
+                } else {
+                    isZero = true;
+                    builder.append("id = 0;\n");
+                    builder.append("try{\n");
+                    builder.append("if(rClass == null){\n");
+                    builder.append("android.content.Context context = source instanceof android.app.Activity ?(android.content.Context)source:((android.view.View)source).getContext();\n");
+                    builder.append("rClass = Class.forName(context.getPackageName() + \".R$id\");\n");
+                    builder.append("}\n");
+                    builder.append("java.lang.reflect.Field idField = rClass.getDeclaredField(\"").append(elementInfoItem.valueName).append("\");\n");
+                    builder.append("id = idField.getInt(idField);\n");
+                    builder.append("}catch(Exception e){\n");
+                    builder.append("e.printStackTrace();\n}");
+                }
+                builder.append("view = null;\n");
+                if (isZero) {
+                    builder.append("if(id != 0){\n");
+                }
+                builder.append("if(source instanceof android.app.Activity){\n");
+                builder.append("view = ((android.app.Activity)source).findViewById(id);\n");
+                builder.append("}else if(source instanceof android.app.Fragment){\n");
+                builder.append("view = ((android.app.Fragment)source).getView().findViewById(id);\n");
+                builder.append("}else if(source instanceof android.support.v4.app.Fragment){\n");
+                builder.append("view = ((android.support.v4.app.Fragment)source).getView().findViewById(id);\n");
+                builder.append("}else if(source instanceof android.app.Dialog){\n");
+                builder.append("view = ((android.app.Dialog)source).findViewById(id);\n");
+                builder.append("}else if(source instanceof android.view.View){\n");
+                builder.append("view = ((android.view.View)source).findViewById(id);\n");
+                builder.append("}\n");
+                if (isZero) {
+                    builder.append("}\n");
+                }
+                builder.append("if(view != null){\n");
+                if (elementInfoItem.type == 1) {
+                    builder.append("final android.view.View temp = view;\n");
+                    builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
+                    builder.append("@Override\n");
+                    builder.append("public void onClick(android.view.View v) {\n");
+                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                            .append("(temp);\n");
+                    builder.append("}\n");
+                    builder.append("});\n");
+                } else {
+                    if (elementInfoItem.id != 0) {
+                        builder.append("if(view instanceof android.widget.AbsListView){\n");
+                        builder.append("final android.widget.AbsListView temp = (android.widget.AbsListView)view;\n");
+                        builder.append("temp.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {\n");
+                        builder.append("@Override\n");
+                        builder.append("public void onItemClick(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {\n");
+                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                                .append("(view, position);\n");
+                        builder.append("}\n");
+                        builder.append("});\n");
+                        builder.append("}else if(view instanceof com.loror.lororUtil.view.ItemClickAble){\n");
+                        builder.append("final com.loror.lororUtil.view.ItemClickAble temp = (com.loror.lororUtil.view.ItemClickAble)view;\n");
+                        builder.append("temp.setOnItemClickListener(new com.loror.lororUtil.view.OnItemClickListener() {\n");
+                        builder.append("@Override\n");
+                        builder.append("public void onItemClick(android.view.View view, int position) {\n");
+                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                                .append("(view, position);\n");
+                        builder.append("}\n");
+                        builder.append("});\n");
+                        builder.append("}\n");
+                    }
+                }
+                builder.append("}\n");
+                if (elementInfoItem.id == 0 && elementInfoItem.type == 2) {
+                    builder.append("if(source instanceof android.view.View){\n");
+                    builder.append("final android.view.View temp = view;\n");
+                    builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
+                    builder.append("@Override\n");
+                    builder.append("public void onClick(android.view.View v) {\n");
+                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                            .append("(temp);\n");
+                    builder.append("}\n");
+                    builder.append("});\n");
+                    builder.append("}\n");
+                }
+            }
+            builder.append("android.util.Log.e(\"TAG_\",\"").append(packageName).append(".").append(className).append(" clicked\");\n");
             builder.append("}\n");
             builder.append("}\n");
 
@@ -102,9 +211,11 @@ public class ElementInfo {
         String classType;
         String valueName;
         int id;
+        int type;//0,Find,1,Click,2,ItemClick
 
 
-        public ElementInfoItem(String classType, String valueName, int id) {
+        public ElementInfoItem(int type, String classType, String valueName, int id) {
+            this.type = type;
             this.classType = classType;
             this.valueName = valueName;
             this.id = id <= 0 ? 0 : id;

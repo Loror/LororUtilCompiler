@@ -18,6 +18,12 @@ android {
     }
 }
 
+repositories {
+    flatDir {
+        dirs 'libs'   // aar目录
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
@@ -25,5 +31,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    compile(name: 'lororUtil', ext: 'aar')
     annotationProcessor project(':compiler')
 }
