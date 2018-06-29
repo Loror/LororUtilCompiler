@@ -19,9 +19,11 @@ android {
 }
 
 repositories {
-    flatDir {
-        dirs 'libs'   // aar目录
-    }
+    maven { url "https://jitpack.io" }
+    jcenter()
+//    flatDir {
+//        dirs 'libs'   // aar目录
+//    }
 }
 
 dependencies {
@@ -31,6 +33,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    compile(name: 'lororUtil', ext: 'aar')
+    implementation 'com.github.Loror:LororUtil:1.4.4'
     annotationProcessor project(':compiler')
 }
