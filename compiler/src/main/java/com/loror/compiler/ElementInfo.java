@@ -36,7 +36,8 @@ public class ElementInfo {
 
     public void addElement(int type, Element variableElement) {
         elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
-                type == 0 ? variableElement.getAnnotation(Find.class).value() : type == 1 ? variableElement.getAnnotation(Click.class).id() : variableElement.getAnnotation(ItemClick.class).id()));
+                type == 0 ? variableElement.getAnnotation(Find.class).value() : type == 1 ? variableElement.getAnnotation(Click.class).id() : variableElement.getAnnotation(ItemClick.class).id(),
+                type == 0 ? 0 : type == 1 ? variableElement.getAnnotation(Click.class).clickSpace() : variableElement.getAnnotation(ItemClick.class).clickSpace()));
     }
 
     public void generateSource() {
@@ -126,11 +127,23 @@ public class ElementInfo {
                     builder.append("view = ((android.view.View)source).findViewById(id);\n");
                     builder.append("}\n");
                     builder.append("if(view != null){\n");
+                    if (elementInfoItem.clickSpace > 0) {
+                        builder.append("final long clickSpace = ").append(elementInfoItem.clickSpace).append(";\n");
+                    }
                     if (elementInfoItem.type == 1) {
                         builder.append("final android.view.View temp = view;\n");
                         builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
+                        if (elementInfoItem.clickSpace > 0) {
+                            builder.append("private long click;\n");
+                        }
                         builder.append("@Override\n");
                         builder.append("public void onClick(android.view.View v) {\n");
+                        if (elementInfoItem.clickSpace > 0) {
+                            builder.append("if (System.currentTimeMillis() - click < clickSpace) {\n");
+                            builder.append("return;\n");
+                            builder.append("}\n");
+                            builder.append("click = System.currentTimeMillis();\n");
+                        }
                         builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
                                 .append("(temp);\n");
                         builder.append("}\n");
@@ -140,8 +153,17 @@ public class ElementInfo {
                             builder.append("if(view instanceof android.widget.AbsListView){\n");
                             builder.append("final android.widget.AbsListView temp = (android.widget.AbsListView)view;\n");
                             builder.append("temp.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {\n");
+                            if (elementInfoItem.clickSpace > 0) {
+                                builder.append("private long click;\n");
+                            }
                             builder.append("@Override\n");
                             builder.append("public void onItemClick(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {\n");
+                            if (elementInfoItem.clickSpace > 0) {
+                                builder.append("if (System.currentTimeMillis() - click < clickSpace) {\n");
+                                builder.append("return;\n");
+                                builder.append("}\n");
+                                builder.append("click = System.currentTimeMillis();\n");
+                            }
                             builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
                                     .append("(view, position);\n");
                             builder.append("}\n");
@@ -149,8 +171,17 @@ public class ElementInfo {
                             builder.append("}else if(view instanceof com.loror.lororUtil.view.ItemClickAble){\n");
                             builder.append("final com.loror.lororUtil.view.ItemClickAble temp = (com.loror.lororUtil.view.ItemClickAble)view;\n");
                             builder.append("temp.setOnItemClickListener(new com.loror.lororUtil.view.OnItemClickListener() {\n");
+                            if (elementInfoItem.clickSpace > 0) {
+                                builder.append("private long click;\n");
+                            }
                             builder.append("@Override\n");
                             builder.append("public void onItemClick(android.view.View view, int position) {\n");
+                            if (elementInfoItem.clickSpace > 0) {
+                                builder.append("if (System.currentTimeMillis() - click < clickSpace) {\n");
+                                builder.append("return;\n");
+                                builder.append("}\n");
+                                builder.append("click = System.currentTimeMillis();\n");
+                            }
                             builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
                                     .append("(view, position);\n");
                             builder.append("}\n");
@@ -162,10 +193,20 @@ public class ElementInfo {
                 }
                 if (isZero && elementInfoItem.type == 2) {
                     builder.append("if(source instanceof android.view.View){\n");
+                    builder.append("final long clickSpace = ").append(elementInfoItem.clickSpace).append(";\n");
                     builder.append("final android.view.View temp = (android.view.View)source;\n");
                     builder.append("temp.setOnClickListener(new android.view.View.OnClickListener() {\n");
+                    if (elementInfoItem.clickSpace > 0) {
+                        builder.append("private long click;\n");
+                    }
                     builder.append("@Override\n");
                     builder.append("public void onClick(android.view.View v) {\n");
+                    if (elementInfoItem.clickSpace > 0) {
+                        builder.append("if (System.currentTimeMillis() - click < clickSpace) {\n");
+                        builder.append("return;\n");
+                        builder.append("}\n");
+                        builder.append("click = System.currentTimeMillis();\n");
+                    }
                     builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
                             .append("(temp);\n");
                     builder.append("}\n");
@@ -197,14 +238,16 @@ public class ElementInfo {
         String classType;
         String valueName;
         int id;
+        long clickSpace;
         int type;//0,Find,1,Click,2,ItemClick
 
 
-        public ElementInfoItem(int type, String classType, String valueName, int id) {
+        public ElementInfoItem(int type, String classType, String valueName, int id, long clickSpace) {
             this.type = type;
             this.classType = classType;
             this.valueName = valueName;
             this.id = id <= 0 ? 0 : id;
+            this.clickSpace = clickSpace;
         }
     }
 }
