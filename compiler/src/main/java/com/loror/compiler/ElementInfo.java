@@ -24,7 +24,8 @@ public class ElementInfo {
     private String packageName;
     private String className;
     private String proxyClassName;
-    private String appPackageName;//app包名,请配置避免需要使用反射
+
+    private final String appPackageName = null;//app包名,请配置避免生成反射代码
 
     public ElementInfo(ProcessingEnvironment processingEnv, TypeElement typeElement) {
         this.processingEnv = processingEnv;
