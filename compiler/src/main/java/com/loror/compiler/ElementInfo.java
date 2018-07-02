@@ -64,7 +64,7 @@ public class ElementInfo {
                     builder.append("id = 0;\n");
                     builder.append("try{\n");
                     builder.append("if(rClass == null){\n");
-                    builder.append("android.content.Context context = source instanceof android.app.Activity ?(android.content.Context)source:((android.view.View)source).getContext();\n");
+                    builder.append("android.content.Context context = source instanceof android.app.Activity ? (android.content.Context) source : source instanceof android.app.Fragment ? ((android.app.Fragment) source).getActivity() : source instanceof android.support.v4.app.Fragment ? ((android.support.v4.app.Fragment) source).getActivity() : source instanceof android.app.Dialog ? ((android.app.Dialog) source).getContext() : ((android.view.View) source).getContext();\n");
                     builder.append("rClass = Class.forName(context.getPackageName() + \".R$id\");\n");
                     builder.append("}\n");
                     builder.append("java.lang.reflect.Field idField = rClass.getDeclaredField(\"").append(elementInfoItem.valueName).append("\");\n");
