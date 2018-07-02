@@ -24,6 +24,7 @@ public class ElementInfo {
     private String packageName;
     private String className;
     private String proxyClassName;
+    private String appPackageName;//app包名,请配置避免需要使用反射
 
     public ElementInfo(ProcessingEnvironment processingEnv, TypeElement typeElement) {
         this.processingEnv = processingEnv;
@@ -41,7 +42,6 @@ public class ElementInfo {
     }
 
     public void generateSource() {
-        String name = typeElement.getQualifiedName().toString();
         try {
             StringBuilder builder = new StringBuilder();
             builder.append("// Generated code. Do not modify!\n");
@@ -50,7 +50,9 @@ public class ElementInfo {
             builder.append("@Override\n");
             builder.append("public void find(Object holder, Object source) {\n");
             builder.append("int id = 0;\n");
-            builder.append("Class<?> rClass = null;\n");
+            if (appPackageName == null) {
+                builder.append("Class<?> rClass = null;\n");
+            }
             for (ElementInfoItem elementInfoItem : elementInfoItems) {
                 if (elementInfoItem.type != 0) {
                     continue;
@@ -61,16 +63,20 @@ public class ElementInfo {
                     builder.append("id = ").append(elementInfoItem.id).append(";\n");
                 } else {
                     isZero = true;
-                    builder.append("id = 0;\n");
-                    builder.append("try{\n");
-                    builder.append("if(rClass == null){\n");
-                    builder.append("android.content.Context context = source instanceof android.app.Activity ? (android.content.Context) source : source instanceof android.app.Fragment ? ((android.app.Fragment) source).getActivity() : source instanceof android.support.v4.app.Fragment ? ((android.support.v4.app.Fragment) source).getActivity() : source instanceof android.app.Dialog ? ((android.app.Dialog) source).getContext() : ((android.view.View) source).getContext();\n");
-                    builder.append("rClass = Class.forName(context.getPackageName() + \".R$id\");\n");
-                    builder.append("}\n");
-                    builder.append("java.lang.reflect.Field idField = rClass.getDeclaredField(\"").append(elementInfoItem.valueName).append("\");\n");
-                    builder.append("id = idField.getInt(idField);\n");
-                    builder.append("}catch(Exception e){\n");
-                    builder.append("e.printStackTrace();\n}");
+                    if (appPackageName == null) {
+                        builder.append("id = 0;\n");
+                        builder.append("try{\n");
+                        builder.append("if(rClass == null){\n");
+                        builder.append("android.content.Context context = source instanceof android.app.Activity ? (android.content.Context) source : source instanceof android.app.Fragment ? ((android.app.Fragment) source).getActivity() : source instanceof android.support.v4.app.Fragment ? ((android.support.v4.app.Fragment) source).getActivity() : source instanceof android.app.Dialog ? ((android.app.Dialog) source).getContext() : ((android.view.View) source).getContext();\n");
+                        builder.append("rClass = Class.forName(context.getPackageName() + \".R$id\");\n");
+                        builder.append("}\n");
+                        builder.append("java.lang.reflect.Field idField = rClass.getDeclaredField(\"").append(elementInfoItem.valueName).append("\");\n");
+                        builder.append("id = idField.getInt(idField);\n");
+                        builder.append("}catch(Exception e){\n");
+                        builder.append("e.printStackTrace();\n}");
+                    } else {
+                        builder.append("id = ").append(appPackageName).append(".R.id.").append(elementInfoItem.valueName).append(";\n");
+                    }
                 }
                 if (isZero) {
                     builder.append("if(id != 0){\n");
