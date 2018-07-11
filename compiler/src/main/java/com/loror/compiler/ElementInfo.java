@@ -151,7 +151,6 @@ public class ElementInfo {
                         builder.append("final long clickSpace = ").append(elementInfoItem.clickSpace).append(";\n");
                     }
                     if (elementInfoItem.type == 1) {
-                        builder.append("final android.view.View temp = view;\n");
                         builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
                         if (elementInfoItem.clickSpace > 0) {
                             builder.append("private long click;\n");
@@ -165,14 +164,13 @@ public class ElementInfo {
                             builder.append("click = System.currentTimeMillis();\n");
                         }
                         builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                                .append("(temp);\n");
+                                .append("(v);\n");
                         builder.append("}\n");
                         builder.append("});\n");
                     } else {
                         if (elementInfoItem.id != 0) {
                             builder.append("if(view instanceof android.widget.AbsListView){\n");
-                            builder.append("final android.widget.AbsListView temp = (android.widget.AbsListView)view;\n");
-                            builder.append("temp.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {\n");
+                            builder.append("((android.widget.AbsListView)view).setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {\n");
                             if (elementInfoItem.clickSpace > 0) {
                                 builder.append("private long click;\n");
                             }
@@ -189,8 +187,7 @@ public class ElementInfo {
                             builder.append("}\n");
                             builder.append("});\n");
                             builder.append("}else if(view instanceof com.loror.lororUtil.view.ItemClickAble){\n");
-                            builder.append("final com.loror.lororUtil.view.ItemClickAble temp = (com.loror.lororUtil.view.ItemClickAble)view;\n");
-                            builder.append("temp.setOnItemClickListener(new com.loror.lororUtil.view.OnItemClickListener() {\n");
+                            builder.append("((com.loror.lororUtil.view.ItemClickAble)view).setOnItemClickListener(new com.loror.lororUtil.view.OnItemClickListener() {\n");
                             if (elementInfoItem.clickSpace > 0) {
                                 builder.append("private long click;\n");
                             }
