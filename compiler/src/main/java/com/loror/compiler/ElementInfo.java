@@ -211,8 +211,7 @@ public class ElementInfo {
                 if (isZero && elementInfoItem.type == 2) {
                     builder.append("if(source instanceof android.view.View){\n");
                     builder.append("final long clickSpace = ").append(elementInfoItem.clickSpace).append(";\n");
-                    builder.append("final android.view.View temp = (android.view.View)source;\n");
-                    builder.append("temp.setOnClickListener(new android.view.View.OnClickListener() {\n");
+                    builder.append("((android.view.View)source).setOnClickListener(new android.view.View.OnClickListener() {\n");
                     if (elementInfoItem.clickSpace > 0) {
                         builder.append("private long click;\n");
                     }
@@ -225,7 +224,7 @@ public class ElementInfo {
                         builder.append("click = System.currentTimeMillis();\n");
                     }
                     builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                            .append("(temp);\n");
+                            .append("(v);\n");
                     builder.append("}\n");
                     builder.append("});\n");
                     builder.append("}\n");
