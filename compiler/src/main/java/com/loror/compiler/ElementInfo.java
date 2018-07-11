@@ -37,9 +37,22 @@ public class ElementInfo {
     }
 
     public void addElement(int type, Element variableElement) {
-        elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
-                type == 0 ? variableElement.getAnnotation(Find.class).value() : type == 1 ? variableElement.getAnnotation(Click.class).id() : variableElement.getAnnotation(ItemClick.class).id(),
-                type == 0 ? 0 : type == 1 ? variableElement.getAnnotation(Click.class).clickSpace() : variableElement.getAnnotation(ItemClick.class).clickSpace()));
+        switch (type) {
+            case 0:
+                elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
+                        variableElement.getAnnotation(Find.class).value(), 0));
+                break;
+            case 1:
+                for (int i = 0; i < variableElement.getAnnotation(Click.class).id().length; i++) {
+                    elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
+                            variableElement.getAnnotation(Click.class).id()[i], variableElement.getAnnotation(Click.class).clickSpace()));
+                }
+                break;
+            case 2:
+                elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
+                        variableElement.getAnnotation(ItemClick.class).id(), variableElement.getAnnotation(ItemClick.class).clickSpace()));
+                break;
+        }
     }
 
     public void generateSource() {
