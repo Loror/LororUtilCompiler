@@ -7,6 +7,7 @@ import com.loror.lororUtil.view.ItemClick;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -60,7 +61,8 @@ public class ElementInfo {
             StringBuilder builder = new StringBuilder();
             builder.append("// Generated code. Do not modify!\n");
             builder.append("package ").append(packageName).append(";\n\n");
-            builder.append("public class ").append(proxyClassName.replace(".", "$")).append(" implements com.loror.lororUtil.view.ClassAnotationFinder{\n");
+            builder.append("public class ").append(proxyClassName.replace(".", "$")).append(" implements com.loror.lororUtil.view.ClassAnotationFinder, android.view.View.OnClickListener{\n");
+            builder.append("private Object holder;\n");
             builder.append("@Override\n");
             builder.append("public void find(Object holder, Object source) {\n");
             builder.append("int id = 0;\n");
@@ -117,8 +119,12 @@ public class ElementInfo {
             }
             builder.append("android.util.Log.e(\"TAG_\",\"").append(packageName).append(".").append(className).append(" finded\");\n");
             builder.append("}\n");
+
+            List<ElementInfoItem> clicks = new LinkedList<>();
+
             builder.append("@Override\n");
             builder.append("public void click(final Object holder, Object source) {\n");
+            builder.append("this.holder = holder;\n");
             builder.append("int id = 0;\n");
             builder.append("android.view.View view = null;\n");
             for (ElementInfoItem elementInfoItem : elementInfoItems) {
@@ -151,22 +157,8 @@ public class ElementInfo {
                         builder.append("final long clickSpace = ").append(elementInfoItem.clickSpace).append(";\n");
                     }
                     if (elementInfoItem.type == 1) {
-                        builder.append("view.setOnClickListener(new android.view.View.OnClickListener() {\n");
-                        if (elementInfoItem.clickSpace > 0) {
-                            builder.append("private long click;\n");
-                        }
-                        builder.append("@Override\n");
-                        builder.append("public void onClick(android.view.View v) {\n");
-                        if (elementInfoItem.clickSpace > 0) {
-                            builder.append("if (System.currentTimeMillis() - click < clickSpace) {\n");
-                            builder.append("return;\n");
-                            builder.append("}\n");
-                            builder.append("click = System.currentTimeMillis();\n");
-                        }
-                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                                .append("(v);\n");
-                        builder.append("}\n");
-                        builder.append("});\n");
+                        clicks.add(elementInfoItem);
+                        builder.append("view.setOnClickListener(this);\n");
                     } else {
                         if (elementInfoItem.id != 0) {
                             builder.append("if(view instanceof android.widget.AbsListView){\n");
@@ -232,6 +224,40 @@ public class ElementInfo {
             }
             builder.append("android.util.Log.e(\"TAG_\",\"").append(packageName).append(".").append(className).append(" clicked\");\n");
             builder.append("}\n");
+
+            if (clicks.size() > 0) {
+                int size = 0;
+                for (ElementInfoItem elementInfo : clicks) {
+                    if (elementInfo.clickSpace > 0) {
+                        size++;
+                    }
+                }
+                if (size > 0) {
+                    builder.append("private long[] clickTimes = new long[").append(size).append("];\n");
+                }
+            }
+            builder.append("@Override\n");
+            builder.append("public void onClick(android.view.View v) {\n");
+            if (clicks.size() > 0) {
+                builder.append("switch (v.getId()){\n");
+                int index = 0;
+                for (ElementInfoItem elementInfo : clicks) {
+                    builder.append("case ").append(elementInfo.id).append(":\n");
+                    if (elementInfo.clickSpace > 0) {
+                        builder.append("if (System.currentTimeMillis() - clickTimes[").append(index++).append("] > ").append(elementInfo.clickSpace).append(") {\n");
+                        builder.append("clickTimes[0] = System.currentTimeMillis();\n");
+                    }
+                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfo.valueName)
+                            .append("(v);\n");
+                    if (elementInfo.clickSpace > 0) {
+                        builder.append("}\n");
+                    }
+                    builder.append("break;");
+                }
+                builder.append("}\n");
+            }
+            builder.append("}\n");
+
             builder.append("}\n");
 
             JavaFileObject jfo = processingEnv.getFiler().createSourceFile(
