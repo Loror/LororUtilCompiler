@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ViewUtil.find(this);
-        textView.setText("oihfiohifn");
+        textView.setText("显示改变");
         listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.test_list_item, new String[]{"1", "2", "3"}));
     }
 
