@@ -302,7 +302,7 @@ public class ElementInfo {
                     if (elementInfo.clickSpace > 0) {
                         builder.append("}\n");
                     }
-                    builder.append("break;");
+                    builder.append("break;\n");
                 }
                 builder.append("}\n");
             }
@@ -316,11 +316,11 @@ public class ElementInfo {
                     builder.append("case ").append(elementInfo.id).append(":\n");
                     builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfo.valueName)
                             .append("(v);\n");
-                    builder.append("break;");
+                    builder.append("break;\n");
                 }
                 builder.append("}\n");
             }
-            builder.append("return true;");
+            builder.append("return true;\n");
             builder.append("}\n");
 
             builder.append("}\n");
