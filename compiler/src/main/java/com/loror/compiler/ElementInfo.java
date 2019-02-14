@@ -15,7 +15,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.tools.JavaFileObject;
 
 public class ElementInfo {
