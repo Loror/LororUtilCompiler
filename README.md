@@ -9,6 +9,8 @@
 annotationProcessor project(':compiler')
 ```
 
+请配置ElementInfo类中appPackageName属性为您的包名，以避免未指定id的Find注解生成反射代码降低效率
+
 License
 -------
 
