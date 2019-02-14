@@ -3,6 +3,8 @@ package com.loror.compiler;
 import com.loror.lororUtil.view.Click;
 import com.loror.lororUtil.view.Find;
 import com.loror.lororUtil.view.ItemClick;
+import com.loror.lororUtil.view.ItemLongClick;
+import com.loror.lororUtil.view.LongClick;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -53,6 +55,16 @@ public class ElementInfo {
                 elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
                         variableElement.getAnnotation(ItemClick.class).id(), variableElement.getAnnotation(ItemClick.class).clickSpace()));
                 break;
+            case 3:
+                for (int i = 0; i < variableElement.getAnnotation(LongClick.class).id().length; i++) {
+                    elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
+                            variableElement.getAnnotation(LongClick.class).id()[i], 0));
+                }
+                break;
+            case 4:
+                elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
+                        variableElement.getAnnotation(ItemLongClick.class).id(), 0));
+                break;
         }
     }
 
@@ -61,7 +73,7 @@ public class ElementInfo {
             StringBuilder builder = new StringBuilder();
             builder.append("// Generated code. Do not modify!\n");
             builder.append("package ").append(packageName).append(";\n\n");
-            builder.append("public class ").append(proxyClassName.replace(".", "$")).append(" implements com.loror.lororUtil.view.ClassAnotationFinder, android.view.View.OnClickListener{\n");
+            builder.append("public class ").append(proxyClassName.replace(".", "$")).append(" implements com.loror.lororUtil.view.ClassAnotationFinder, android.view.View.OnClickListener, android.view.View.OnLongClickListener{\n");
             builder.append("private Object holder;\n");
             builder.append("@Override\n");
             builder.append("public void find(Object holder, Object source) {\n");
@@ -121,6 +133,7 @@ public class ElementInfo {
             builder.append("}\n");
 
             List<ElementInfoItem> clicks = new LinkedList<>();
+            List<ElementInfoItem> longClicks = new LinkedList<>();
 
             builder.append("@Override\n");
             builder.append("public void click(final Object holder, Object source) {\n");
@@ -159,7 +172,7 @@ public class ElementInfo {
                     if (elementInfoItem.type == 1) {
                         clicks.add(elementInfoItem);
                         builder.append("view.setOnClickListener(this);\n");
-                    } else {
+                    } else if (elementInfoItem.type == 2) {
                         if (elementInfoItem.id != 0) {
                             builder.append("if(view instanceof android.widget.AbsListView){\n");
                             builder.append("((android.widget.AbsListView)view).setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {\n");
@@ -197,29 +210,67 @@ public class ElementInfo {
                             builder.append("});\n");
                             builder.append("}\n");
                         }
+                    } else if (elementInfoItem.type == 3) {
+                        longClicks.add(elementInfoItem);
+                        builder.append("view.setOnLongClickListener(this);\n");
+                    } else if (elementInfoItem.type == 4) {
+                        if (elementInfoItem.id != 0) {
+                            builder.append("if(view instanceof android.widget.AbsListView){\n");
+                            builder.append("((android.widget.AbsListView)view).setOnItemLongClickListener(new android.widget.AdapterView.OnItemLongClickListener() {\n");
+                            builder.append("@Override\n");
+                            builder.append("public boolean onItemLongClick(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {\n");
+                            builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                                    .append("(view, position);\n");
+                            builder.append("return true;\n");
+                            builder.append("}\n");
+                            builder.append("});\n");
+                            builder.append("}else if(view instanceof com.loror.lororUtil.view.ItemLongClickAble){\n");
+                            builder.append("((com.loror.lororUtil.view.ItemLongClickAble)view).setOnItemLongClickListener(new com.loror.lororUtil.view.OnItemClickListener() {\n");
+                            builder.append("@Override\n");
+                            builder.append("public void onItemClick(android.view.View view, int position) {\n");
+                            builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                                    .append("(view, position);\n");
+                            builder.append("}\n");
+                            builder.append("});\n");
+                            builder.append("}\n");
+                        }
                     }
                     builder.append("}\n");
                 }
-                if (isZero && elementInfoItem.type == 2) {
-                    builder.append("if(source instanceof android.view.View){\n");
-                    builder.append("final long clickSpace = ").append(elementInfoItem.clickSpace).append(";\n");
-                    builder.append("((android.view.View)source).setOnClickListener(new android.view.View.OnClickListener() {\n");
-                    if (elementInfoItem.clickSpace > 0) {
-                        builder.append("private long click;\n");
-                    }
-                    builder.append("@Override\n");
-                    builder.append("public void onClick(android.view.View v) {\n");
-                    if (elementInfoItem.clickSpace > 0) {
-                        builder.append("if (System.currentTimeMillis() - click < clickSpace) {\n");
-                        builder.append("return;\n");
+                if (isZero) {
+                    if (elementInfoItem.type == 2) {
+                        builder.append("if(source instanceof android.view.View){\n");
+                        builder.append("final long clickSpace = ").append(elementInfoItem.clickSpace).append(";\n");
+                        builder.append("((android.view.View)source).setOnClickListener(new android.view.View.OnClickListener() {\n");
+                        if (elementInfoItem.clickSpace > 0) {
+                            builder.append("private long click;\n");
+                        }
+                        builder.append("@Override\n");
+                        builder.append("public void onClick(android.view.View v) {\n");
+                        if (elementInfoItem.clickSpace > 0) {
+                            builder.append("if (System.currentTimeMillis() - click < clickSpace) {\n");
+                            builder.append("return;\n");
+                            builder.append("}\n");
+                            builder.append("click = System.currentTimeMillis();\n");
+                        }
+                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                                .append("(v);\n");
                         builder.append("}\n");
-                        builder.append("click = System.currentTimeMillis();\n");
+                        builder.append("});\n");
+                        builder.append("}\n");
+                    } else if (elementInfoItem.type == 4) {
+                        builder.append("if(source instanceof android.view.View){\n");
+                        builder.append("final long clickSpace = ").append(elementInfoItem.clickSpace).append(";\n");
+                        builder.append("((android.view.View)source).setOnLongClickListener(new android.view.View.OnLongClickListener() {\n");
+                        builder.append("@Override\n");
+                        builder.append("public boolean onLongClick(android.view.View view) {\n");
+                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
+                                .append("(v);\n");
+                        builder.append("return true;\n");
+                        builder.append("}\n");
+                        builder.append("});\n");
+                        builder.append("}\n");
                     }
-                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                            .append("(v);\n");
-                    builder.append("}\n");
-                    builder.append("});\n");
-                    builder.append("}\n");
                 }
             }
             builder.append("android.util.Log.e(\"TAG_\",\"").append(packageName).append(".").append(className).append(" clicked\");\n");
@@ -256,6 +307,21 @@ public class ElementInfo {
                 }
                 builder.append("}\n");
             }
+            builder.append("}\n");
+
+            builder.append("@Override\n");
+            builder.append("public boolean onLongClick(android.view.View v) {\n");
+            if (longClicks.size() > 0) {
+                builder.append("switch (v.getId()){\n");
+                for (ElementInfoItem elementInfo : longClicks) {
+                    builder.append("case ").append(elementInfo.id).append(":\n");
+                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfo.valueName)
+                            .append("(v);\n");
+                    builder.append("break;");
+                }
+                builder.append("}\n");
+            }
+            builder.append("return true;");
             builder.append("}\n");
 
             builder.append("}\n");

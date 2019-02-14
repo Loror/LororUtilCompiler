@@ -4,6 +4,8 @@ package com.loror.compiler;
 import com.loror.lororUtil.view.Click;
 import com.loror.lororUtil.view.Find;
 import com.loror.lororUtil.view.ItemClick;
+import com.loror.lororUtil.view.ItemLongClick;
+import com.loror.lororUtil.view.LongClick;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -59,6 +61,26 @@ public class FinderProcessor extends AbstractProcessor {
                 elementInfoHashMap.put(fqClassName, elementInfo);
             }
             elementInfo.addElement(2, element);
+        }
+        for (Element element : roundEnv.getElementsAnnotatedWith(LongClick.class)) {
+            TypeElement typeElement = (TypeElement) element.getEnclosingElement();
+            String fqClassName = typeElement.getQualifiedName().toString();
+            ElementInfo elementInfo = elementInfoHashMap.get(fqClassName);
+            if (elementInfo == null) {
+                elementInfo = new ElementInfo(processingEnv, typeElement);
+                elementInfoHashMap.put(fqClassName, elementInfo);
+            }
+            elementInfo.addElement(3, element);
+        }
+        for (Element element : roundEnv.getElementsAnnotatedWith(ItemLongClick.class)) {
+            TypeElement typeElement = (TypeElement) element.getEnclosingElement();
+            String fqClassName = typeElement.getQualifiedName().toString();
+            ElementInfo elementInfo = elementInfoHashMap.get(fqClassName);
+            if (elementInfo == null) {
+                elementInfo = new ElementInfo(processingEnv, typeElement);
+                elementInfoHashMap.put(fqClassName, elementInfo);
+            }
+            elementInfo.addElement(4, element);
         }
         for (String key : elementInfoHashMap.keySet()) {
             ElementInfo elementInfo = elementInfoHashMap.get(key);
