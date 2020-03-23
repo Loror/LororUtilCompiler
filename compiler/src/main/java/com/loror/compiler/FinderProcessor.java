@@ -94,6 +94,7 @@ public class FinderProcessor extends AbstractProcessor {
         annotataions.add(Find.class.getCanonicalName());
         annotataions.add(Click.class.getCanonicalName());
         annotataions.add(ItemClick.class.getCanonicalName());
+        annotataions.add(ItemLongClick.class.getCanonicalName());
         return annotataions;
     }
 

@@ -41,28 +41,47 @@ public class ElementInfo {
     public void addElement(int type, Element variableElement) {
         switch (type) {
             case 0:
-                elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
-                        variableElement.getAnnotation(Find.class).value(), 0));
+                elementInfoItems.add(new ElementInfoItem(type,
+                        variableElement.asType().toString(),
+                        variableElement.getSimpleName().toString(),
+                        variableElement.getAnnotation(Find.class).value(),
+                        0,
+                        0));
                 break;
             case 1:
                 for (int i = 0; i < variableElement.getAnnotation(Click.class).id().length; i++) {
-                    elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
-                            variableElement.getAnnotation(Click.class).id()[i], variableElement.getAnnotation(Click.class).clickSpace()));
+                    elementInfoItems.add(new ElementInfoItem(type,
+                            variableElement.asType().toString(),
+                            variableElement.getSimpleName().toString(),
+                            variableElement.getAnnotation(Click.class).id()[i],
+                            variableElement.getAnnotation(Click.class).clickSpace(),
+                            variableElement.toString().endsWith("()") ? 0 : 1));
                 }
                 break;
             case 2:
-                elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
-                        variableElement.getAnnotation(ItemClick.class).id(), variableElement.getAnnotation(ItemClick.class).clickSpace()));
+                elementInfoItems.add(new ElementInfoItem(type,
+                        variableElement.asType().toString(),
+                        variableElement.getSimpleName().toString(),
+                        variableElement.getAnnotation(ItemClick.class).id(),
+                        variableElement.getAnnotation(ItemClick.class).clickSpace(),
+                        variableElement.toString().endsWith("()") ? 0 : 1));
                 break;
             case 3:
                 for (int i = 0; i < variableElement.getAnnotation(LongClick.class).id().length; i++) {
-                    elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
-                            variableElement.getAnnotation(LongClick.class).id()[i], 0));
+                    elementInfoItems.add(new ElementInfoItem(type,
+                            variableElement.asType().toString(),
+                            variableElement.getSimpleName().toString(),
+                            variableElement.getAnnotation(LongClick.class).id()[i],
+                            0,
+                            variableElement.toString().endsWith("()") ? 0 : 1));
                 }
                 break;
             case 4:
-                elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(), variableElement.getSimpleName().toString(),
-                        variableElement.getAnnotation(ItemLongClick.class).id(), 0));
+                elementInfoItems.add(new ElementInfoItem(type, variableElement.asType().toString(),
+                        variableElement.getSimpleName().toString(),
+                        variableElement.getAnnotation(ItemLongClick.class).id(),
+                        0,
+                        variableElement.toString().endsWith("()") ? 0 : 1));
                 break;
         }
     }
@@ -252,8 +271,12 @@ public class ElementInfo {
                             builder.append("}\n");
                             builder.append("click = System.currentTimeMillis();\n");
                         }
-                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                                .append("(v);\n");
+                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName);
+                        if (elementInfoItem.param == 0) {
+                            builder.append("();\n");
+                        } else {
+                            builder.append("(v);\n");
+                        }
                         builder.append("}\n");
                         builder.append("});\n");
                         builder.append("}\n");
@@ -263,8 +286,12 @@ public class ElementInfo {
                         builder.append("((android.view.View)source).setOnLongClickListener(new android.view.View.OnLongClickListener() {\n");
                         builder.append("@Override\n");
                         builder.append("public boolean onLongClick(android.view.View view) {\n");
-                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName)
-                                .append("(v);\n");
+                        builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfoItem.valueName);
+                        if (elementInfoItem.param == 0) {
+                            builder.append("();\n");
+                        } else {
+                            builder.append("(v);\n");
+                        }
                         builder.append("return true;\n");
                         builder.append("}\n");
                         builder.append("});\n");
@@ -297,8 +324,12 @@ public class ElementInfo {
                         builder.append("if (System.currentTimeMillis() - clickTimes[").append(index++).append("] > ").append(elementInfo.clickSpace).append(") {\n");
                         builder.append("clickTimes[0] = System.currentTimeMillis();\n");
                     }
-                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfo.valueName)
-                            .append("(v);\n");
+                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfo.valueName);
+                    if (elementInfo.param == 0) {
+                        builder.append("();\n");
+                    } else {
+                        builder.append("(v);\n");
+                    }
                     if (elementInfo.clickSpace > 0) {
                         builder.append("}\n");
                     }
@@ -314,8 +345,12 @@ public class ElementInfo {
                 builder.append("switch (v.getId()){\n");
                 for (ElementInfoItem elementInfo : longClicks) {
                     builder.append("case ").append(elementInfo.id).append(":\n");
-                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfo.valueName)
-                            .append("(v);\n");
+                    builder.append("((").append(packageName).append(".").append(className).append(")holder)").append(".").append(elementInfo.valueName);
+                    if (elementInfo.param == 0) {
+                        builder.append("();\n");
+                    } else {
+                        builder.append("(v);\n");
+                    }
                     builder.append("break;\n");
                 }
                 builder.append("}\n");
@@ -347,14 +382,15 @@ public class ElementInfo {
         int id;
         long clickSpace;
         int type;//0,Find,1,Click,2,ItemClick
+        int param;
 
-
-        public ElementInfoItem(int type, String classType, String valueName, int id, long clickSpace) {
+        public ElementInfoItem(int type, String classType, String valueName, int id, long clickSpace, int param) {
             this.type = type;
             this.classType = classType;
             this.valueName = valueName;
             this.id = id <= 0 ? 0 : id;
             this.clickSpace = clickSpace;
+            this.param = param;
         }
     }
 }
